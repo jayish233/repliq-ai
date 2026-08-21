@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050505;
+  --foreground: #F5F5F5;
+  --primary: #E1E0CC;
+  
+  --obsidian-black: #050505;
+  --obsidian-dark: #0B0B0D;
+  --obsidian-panel: #101012;
+  --obsidian-border: rgba(255, 255, 255, 0.08);
+  --obsidian-text-primary: #F5F5F5;
+  --obsidian-text-secondary: #8A8A8F;
+  --obsidian-accent: #8B5CF6;
+  --obsidian-accent-glow: rgba(139, 92, 246, 0.15);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-obsidian-black: var(--obsidian-black);
+  --color-obsidian-dark: var(--obsidian-dark);
+  --color-obsidian-panel: var(--obsidian-panel);
+  --color-obsidian-border: var(--obsidian-border);
+  --color-obsidian-text-primary: var(--obsidian-text-primary);
+  --color-obsidian-text-secondary: var(--obsidian-text-secondary);
+  --color-obsidian-accent: var(--obsidian-accent);
+  --color-obsidian-accent-glow: var(--obsidian-accent-glow);
+  
+  --font-sans: var(--font-geist-sans), Inter, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--obsidian-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--obsidian-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--obsidian-accent);
+}
+
+/* Animations & Scanning line */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanner-line {
+  animation: scanline 4s linear infinite;
+}
+
+/* Dot grid background styling */
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Cinematic Noise and Vignette Overlays */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E") !important;
+  opacity: 0.045 !important;
+}
+
+.vignette-overlay {
+  background: radial-gradient(circle, transparent 20%, rgba(5, 5, 5, 0.45) 75%, #050505 100%) !important;
+}
+
+/* Osmo Parallax Styles */
+.parallax {
+  width: 100%;
+  position: relative;
+  background-color: #050505;
+}
+
+.parallax__header {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.parallax__visuals {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.parallax__black-line-overflow {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background-color: #050505;
+  z-index: 10;
+}
+
+.parallax__layers {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.parallax__layer-img {
+  position: absolute;
+  top: -10%;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+.parallax__layer-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  will-change: transform;
+}
+
+.parallax__title {
+  font-family: var(--font-sans);
+  font-size: 8vw;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: #E1E0CC;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.parallax__fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35vh;
+  background: linear-gradient(to bottom, transparent, #050505);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.parallax__content {
+  position: relative;
+  width: 100%;
+  min-height: 40vh;
+  background-color: #050505;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rem 0;
+  z-index: 6;
+}
+
+.osmo-icon-svg {
+  width: 80px;
+  height: 80px;
+  color: #E1E0CC;
+  opacity: 0.8;
+  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.osmo-credits {
+  padding: 2rem 0;
+  text-align: center;
+  background-color: #050505;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #8A8A8F;
+}
+
+.osmo-credits__p-a {
+  color: #E1E0CC;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.osmo-credits__p-a:hover {
+  color: white;
+}
