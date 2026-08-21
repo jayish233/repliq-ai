@@ -119,7 +119,7 @@ const PrismaHero = () => {
                 className="font-medium leading-[0.85] tracking-[-0.07em] text-[26vw] sm:text-[24vw] md:text-[22vw] lg:text-[20vw] xl:text-[19vw] 2xl:text-[20vw] font-sans"
                 style={{ color: "#E1E0CC" }}
               >
-                <WordsPullUp text="Prisma" showAsterisk />
+                <WordsPullUp text="Repliq AI" showAsterisk />
               </h1>
             </div>
 
@@ -132,20 +132,10 @@ const PrismaHero = () => {
                 className="text-xs text-primary/70 sm:text-sm md:text-base font-sans"
                 style={{ lineHeight: 1.2 }}
               >
-                Prisma is a worldwide network of visual artists, filmmakers and storytellers bound not by place, status or labels but by passion and hunger to unlock potential through our unique perspectives.
+                Repliq AI is a worldwide network of visual artists, filmmakers and storytellers bound not by place, status or labels but by passion and hunger to unlock potential through our unique perspectives.
               </motion.p>
 
-              <motion.button
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="group inline-flex items-center gap-2 self-start rounded-full bg-primary py-1 pl-5 pr-1 text-sm font-medium text-black transition-all hover:gap-3 sm:text-base font-sans"
-              >
-                Join the lab
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black transition-transform group-hover:scale-110 sm:h-10 sm:w-10">
-                  <ArrowRight className="h-4 w-4" style={{ color: "#E1E0CC" }} />
-                </span>
-              </motion.button>
+               
 
             </div>
           </div>
