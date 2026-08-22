@@ -57,74 +57,63 @@ export default function WorkspacePage() {
     );
   }
 
-  // Handle prompt edits
-  const handleSendCommand = (e: React.FormEvent) => {
+  // Handle prompt edits through OpenRouter
+  const handleSendCommand = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!promptInput.trim()) return;
 
     setIsApplyingPrompt(true);
     setPromptMessage('Repliq AI is mapping workspace dependencies...');
-    
-    setTimeout(() => {
-      setPromptMessage('Analyzing App.tsx file nodes...');
-      
-      setTimeout(() => {
-        // Apply modification to files
-        let updatedCode = project.files['/App.tsx'] || '';
-        
-        const lowerPrompt = promptInput.toLowerCase();
-        
-        // Dynamic prompt patch simulation
-        if (lowerPrompt.includes('green') || lowerPrompt.includes('emerald')) {
-          updatedCode = updatedCode.replaceAll('#8B5CF6', '#10B981');
-          updatedCode = updatedCode.replaceAll('bg-[#8B5CF6]', 'bg-[#10B981]');
-          updatedCode = updatedCode.replaceAll('text-[#8B5CF6]', 'text-[#10B981]');
-        } else if (lowerPrompt.includes('pink') || lowerPrompt.includes('rose')) {
-          updatedCode = updatedCode.replaceAll('#8B5CF6', '#ec4899');
-          updatedCode = updatedCode.replaceAll('bg-[#8B5CF6]', 'bg-[#ec4899]');
-          updatedCode = updatedCode.replaceAll('text-[#8B5CF6]', 'text-[#ec4899]');
-        } else if (lowerPrompt.includes('title') || lowerPrompt.includes('change name')) {
-          updatedCode = updatedCode.replace('APEX ANALYTICS', 'APEX RECONSTRUCTED');
-          updatedCode = updatedCode.replace('HUGO_DEV.SH', 'HUGO_REPLIQ.SH');
-        } else {
-          // Default: Insert comment or text banner
-          updatedCode = `// AI Patched: ${promptInput}\n` + updatedCode;
-        }
 
-        const newLogs = [
-          ...project.logs,
-          { 
-            timestamp: new Date().toLocaleTimeString(), 
-            message: `AI Command received: "${promptInput}"`, 
-            type: 'info' as const 
-          },
-          { 
-            timestamp: new Date().toLocaleTimeString(), 
-            message: 'Patched /App.tsx successfully. Compiling sandbox...', 
-            type: 'success' as const 
-          }
-        ];
+    try {
+      setPromptMessage('Sending instruction to Qwen3 Coder...');
+      const res = await fetch('/api/reconstruct/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: promptInput,
+          files: project.files,
+          activeFile: project.activeFile || '/App.tsx',
+        }),
+      });
+      const data = (await res.json()) as { files?: Record<string, string>; error?: string };
 
-        const updated = updateProject(project.id, {
-          files: {
-            ...project.files,
-            '/App.tsx': updatedCode
-          },
-          logs: newLogs
-        });
+      if (!res.ok || !data.files) {
+        throw new Error(data.error || 'Edit failed');
+      }
 
-        // Deduct prompt iteration credits (15 credits)
-        const currentCredits = getCredits();
-        const nextCredits = Math.max(0, currentCredits - 15);
-        localStorage.setItem('repliq_user_credits', nextCredits.toString());
-        setCredits(nextCredits);
+      const newLogs = [
+        ...project.logs,
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          message: `AI Command received: "${promptInput}"`,
+          type: 'info' as const,
+        },
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          message: 'Patched workspace files successfully. Compiling sandbox...',
+          type: 'success' as const,
+        },
+      ];
 
-        setProject(updated);
-        setIsApplyingPrompt(false);
-        setPromptInput('');
-        setPromptMessage('');
-      }, 1000);
-    }, 1000);
+      const updated = updateProject(project.id, {
+        files: data.files,
+        logs: newLogs,
+      });
+
+      const currentCredits = getCredits();
+      const nextCredits = Math.max(0, currentCredits - 15);
+      localStorage.setItem('repliq_user_credits', nextCredits.toString());
+      setCredits(nextCredits);
+
+      setProject(updated);
+      setPromptInput('');
+      setPromptMessage('');
+    } catch (error) {
+      setPromptMessage(error instanceof Error ? error.message : 'Edit failed');
+    } finally {
+      setIsApplyingPrompt(false);
+    }
   };
 
   // ZIP export trigger simulation
