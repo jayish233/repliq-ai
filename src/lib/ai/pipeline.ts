@@ -638,47 +638,45 @@ const PIPELINE_PHASES: { status: ProjectStatus; label: string; duration: number;
   }
 ];
 
-// Execute the simulated reconstruction engine pipeline
+// Execute the reconstruction engine pipeline, generating files via OpenRouter
 export function runPipeline(id: string, onUpdate: (p: Project) => void) {
   const project = getProject(id);
   if (!project) return;
 
-  // Let's deduce credits
   const creditsToDeduct = project.presetKey ? 45 : 30;
   deductCredits(creditsToDeduct);
 
   let currentLogs = [...project.logs];
   let phaseIdx = 0;
+  let generatedFiles =
+    project.presetKey && PRESETS[project.presetKey]
+      ? PRESETS[project.presetKey].files
+      : PRESETS.saas.files;
+  let detectedTokens =
+    project.presetKey && PRESETS[project.presetKey]
+      ? PRESETS[project.presetKey].detectedTokens
+      : PRESETS.saas.detectedTokens;
 
-  const appendLogs = (messages: string[], type: 'info' | 'success' | 'warn' | 'error' = 'info') => {
-    messages.forEach(msg => {
+  const appendLogs = (messages: string[], type: "info" | "success" | "warn" | "error" = "info") => {
+    messages.forEach((msg) => {
       currentLogs.push({
         timestamp: new Date().toLocaleTimeString(),
         message: msg,
-        type
+        type,
       });
     });
   };
 
-  const executeNextPhase = () => {
+  const executeNextPhase = async () => {
     if (phaseIdx >= PIPELINE_PHASES.length) {
-      // Complete!
-      const presetFiles = project.presetKey && PRESETS[project.presetKey] 
-        ? PRESETS[project.presetKey].files 
-        : PRESETS.saas.files; // Fallback
+      appendLogs(["Build check: PASS", "Reconstruction completed successfully."], "success");
 
-      const detectedTokens = project.presetKey && PRESETS[project.presetKey]
-        ? PRESETS[project.presetKey].detectedTokens
-        : PRESETS.saas.detectedTokens;
-
-      appendLogs(['Build check: PASS', 'Reconstruction completed successfully! ✨'], 'success');
-      
       const updated = updateProject(id, {
-        status: 'READY',
+        status: "READY",
         creditsUsed: creditsToDeduct,
         logs: currentLogs,
-        files: presetFiles,
-        detectedTokens
+        files: generatedFiles,
+        detectedTokens,
       });
       onUpdate(updated);
       return;
@@ -690,19 +688,60 @@ export function runPipeline(id: string, onUpdate: (p: Project) => void) {
 
     const updated = updateProject(id, {
       status: phase.status,
-      logs: currentLogs
+      logs: currentLogs,
     });
     onUpdate(updated);
 
+    if (phase.status === "GENERATING") {
+      appendLogs(["Calling OpenRouter with Qwen3 Coder..."]);
+      try {
+        const res = await fetch("/api/reconstruct/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: project.name,
+            repositoryUrl: project.repositoryUrl,
+            branch: project.branch,
+            presetKey: project.presetKey,
+            screenshots: project.screenshots.map((shot) => ({
+              name: shot.name,
+              dimensions: shot.dimensions,
+              url: shot.url.startsWith("http") ? shot.url : undefined,
+            })),
+          }),
+        });
+        const data = (await res.json()) as {
+          files?: Record<string, string>;
+          detectedTokens?: Record<string, unknown>;
+          error?: string;
+          fallback?: boolean;
+          model?: string;
+        };
+
+        if (res.ok && data.files?.["/App.tsx"]) {
+          generatedFiles = data.files;
+          if (data.detectedTokens) detectedTokens = data.detectedTokens;
+          appendLogs([`Qwen generated ${Object.keys(data.files).length} file(s)${data.model ? ` via ${data.model}` : ""}.`], "success");
+        } else {
+          appendLogs([data.error || "OpenRouter unavailable. Using local reconstruction fallback."], "warn");
+        }
+      } catch {
+        appendLogs(["OpenRouter request failed. Using local reconstruction fallback."], "warn");
+      }
+    }
+
     phaseIdx++;
-    setTimeout(executeNextPhase, phase.duration);
+    setTimeout(() => {
+      void executeNextPhase();
+    }, phase.duration);
   };
 
-  // Start the queued state update first
   updateProject(id, {
-    status: 'QUEUED',
-    logs: currentLogs
+    status: "QUEUED",
+    logs: currentLogs,
   });
 
-  setTimeout(executeNextPhase, 1500);
+  setTimeout(() => {
+    void executeNextPhase();
+  }, 1500);
 }
