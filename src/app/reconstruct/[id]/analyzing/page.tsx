@@ -8,6 +8,7 @@ import {
   Play, Shield, Activity, RefreshCw 
 } from 'lucide-react';
 import { getProject, runPipeline, Project, ProjectStatus } from '@/lib/ai/pipeline';
+import { RepliqLogo } from '@/components/repliq-logo';
 
 interface TimelineStep {
   statusKey: ProjectStatus;
@@ -99,9 +100,9 @@ export default function AnalyzingPipelinePage() {
       {/* Header */}
       <header className="h-16 border-b border-white/8 bg-[#0B0B0D] px-6 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded bg-[#8B5CF6] flex items-center justify-center font-bold text-white text-[10px]">
-            R
-          </div>
+          <Link href="/dashboard" className="shrink-0" aria-label="Repliq dashboard">
+            <RepliqLogo size={24} className="h-6 w-6" />
+          </Link>
           <span className="text-xs font-semibold tracking-wider font-mono text-[#8A8A8F]">
             {project.name.toUpperCase()} / PIPELINE_PIPELINE
           </span>

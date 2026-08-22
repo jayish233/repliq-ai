@@ -23,6 +23,7 @@ import {
   Crown,
 } from 'lucide-react';
 import { getProjects, deleteProject, getCredits, resetCredits, Project } from '@/lib/ai/pipeline';
+import { RepliqLogo } from '@/components/repliq-logo';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -126,10 +127,8 @@ export default function DashboardPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <Link href="/" className="flex min-w-0 items-center gap-2.5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-xs font-bold text-zinc-950">
-                R
-              </span>
+            <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="Repliq home">
+              <RepliqLogo size={32} priority className="h-8 w-8" />
               <span className="hidden truncate text-sm font-medium tracking-wide text-white sm:block">
                 Repliq
               </span>

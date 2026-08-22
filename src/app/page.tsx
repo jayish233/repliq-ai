@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PrismaHero } from "@/components/ui/prisma-hero";
 import { ParallaxComponent } from "@/components/ui/parallax-scrolling";
+import { RepliqLogo } from "@/components/repliq-logo";
 
 
 export default function LandingPage() {
@@ -65,6 +66,9 @@ export default function LandingPage() {
         <div className={`flex items-center gap-3 bg-black px-4 py-2.5 sm:gap-6 md:gap-12 md:px-10 lg:gap-14 border-x border-b border-white/5 transition-all duration-500 ease-[0.16,1,0.3,1] ${
           isScrolled ? 'rounded-2xl md:rounded-3xl shadow-2xl shadow-black/80 border-t border-white/10' : 'rounded-b-2xl md:rounded-b-3xl'
         }`}>
+          <Link href="/" className="shrink-0" aria-label="Repliq home">
+            <RepliqLogo size={28} priority className="h-7 w-7" />
+          </Link>
           <a
             href="#how-it-works"
             className="text-[10px] transition-colors sm:text-xs md:text-sm font-sans"
@@ -344,7 +348,7 @@ export default function LandingPage() {
                 <div>
                   <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md bg-[#E8E5DC] flex items-center justify-center font-bold text-black text-[9px]">R</div>
+                      <RepliqLogo size={20} className="h-5 w-5" />
                       <span className="text-[11px] font-semibold tracking-wider text-[#E8E5DC] uppercase font-sans">Compiled Preview</span>
                     </div>
                     <span className="text-[9px] text-[#8C8983] font-mono uppercase tracking-wider">PREVIEW_RENDER_OK</span>
