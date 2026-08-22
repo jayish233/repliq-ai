@@ -12,6 +12,7 @@ import {
   Loader2, Info, Eye, Image as ImageIcon, Terminal, Sliders 
 } from 'lucide-react';
 import { getProject, updateProject, getCredits, Project, PRESETS } from '@/lib/ai/pipeline';
+import { RepliqLogo } from '@/components/repliq-logo';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -152,6 +153,7 @@ export default function WorkspacePage() {
           </Link>
           <div className="h-4 w-px bg-white/10"></div>
           <div className="flex items-center gap-2.5">
+            <RepliqLogo size={22} className="h-6 w-6" />
             <span className="text-xs font-semibold text-white uppercase tracking-wider">{project.name}</span>
             <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
