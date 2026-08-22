@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { getProjects, deleteProject, getCredits, resetCredits, Project } from '@/lib/ai/pipeline';
 import { RepliqLogo } from '@/components/repliq-logo';
+import { AuthUserChip } from '@/components/auth-user-chip';
+import { useAuth } from '@/lib/auth/use-auth';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -51,6 +53,7 @@ function repoLabel(url: string) {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [credits, setCredits] = useState(100);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -98,6 +101,7 @@ export default function DashboardPage() {
   const readyCount = projects.filter((p) => p.status === 'READY').length;
   const runningCount = projects.filter((p) => p.status !== 'READY' && p.status !== 'FAILED').length;
   const creditPercent = Math.min(100, Math.round((credits / 100) * 100));
+  const firstName = user?.name?.split(' ')[0] || 'there';
 
   return (
     <div className="relative flex min-h-dvh w-full flex-col overflow-x-hidden bg-[#0a0a0a] font-sans text-white">
@@ -157,12 +161,12 @@ export default function DashboardPage() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md">
+            <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md sm:inline-flex">
               <Wallet className="h-3.5 w-3.5 text-zinc-300" />
-              <span className="hidden text-xs text-zinc-400 sm:inline">Wallet</span>
+              <span className="hidden text-xs text-zinc-400 lg:inline">Wallet</span>
               <strong className="text-sm font-semibold text-white">{credits}</strong>
-              <span className="hidden text-xs text-zinc-400 sm:inline">credits</span>
             </div>
+            <AuthUserChip />
           </div>
         </div>
       </header>
@@ -189,7 +193,7 @@ export default function DashboardPage() {
               >
                 {greeting},<br />
                 <span className="bg-linear-to-br from-white via-white to-[#ffcd75] bg-clip-text text-transparent">
-                  Rudar
+                  {firstName}
                 </span>
               </h1>
 

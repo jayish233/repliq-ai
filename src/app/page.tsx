@@ -11,6 +11,7 @@ import {
 import { PrismaHero } from "@/components/ui/prisma-hero";
 import { ParallaxComponent } from "@/components/ui/parallax-scrolling";
 import { RepliqLogo } from "@/components/repliq-logo";
+import { AuthUserChip } from "@/components/auth-user-chip";
 
 
 export default function LandingPage() {
@@ -60,11 +61,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-[#F5F5F5] overflow-x-hidden font-sans dot-grid">
       {/* Centered Floating Capsule Navigation */}
-      <header className={`fixed left-1/2 z-50 -translate-x-1/2 transition-all duration-700 ease-[0.16,1,0.3,1] ${
-        isScrolled ? 'top-3 scale-95' : 'top-0'
+      <header className={`fixed inset-x-0 z-50 flex justify-center px-3 transition-all duration-700 ease-[0.16,1,0.3,1] ${
+        isScrolled ? 'top-3' : 'top-0'
       }`}>
-        <div className={`flex items-center gap-3 bg-black px-4 py-2.5 sm:gap-6 md:gap-12 md:px-10 lg:gap-14 border-x border-b border-white/5 transition-all duration-500 ease-[0.16,1,0.3,1] ${
-          isScrolled ? 'rounded-2xl md:rounded-3xl shadow-2xl shadow-black/80 border-t border-white/10' : 'rounded-b-2xl md:rounded-b-3xl'
+        <div className={`flex w-max max-w-full items-center gap-3 bg-black px-4 py-2.5 sm:gap-5 md:gap-8 md:px-8 lg:gap-10 lg:px-10 border-x border-b border-white/5 transition-all duration-500 ease-[0.16,1,0.3,1] ${
+          isScrolled ? 'scale-95 rounded-2xl md:rounded-3xl shadow-2xl shadow-black/80 border-t border-white/10' : 'rounded-b-2xl md:rounded-b-3xl'
         }`}>
           <Link href="/" className="shrink-0" aria-label="Repliq home">
             <RepliqLogo size={28} priority className="h-7 w-7" />
@@ -114,6 +115,9 @@ export default function LandingPage() {
           >
             Inquiries
           </Link>
+          <div className="ml-1 flex shrink-0 items-center border-l border-white/10 pl-3 pr-0.5 md:ml-2 md:pl-5">
+            <AuthUserChip variant="landing" />
+          </div>
         </div>
       </header>
 
