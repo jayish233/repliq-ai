@@ -26,6 +26,7 @@ import { getProjects, deleteProject, getCredits, resetCredits, Project } from '@
 import { RepliqLogo } from '@/components/repliq-logo';
 import { AuthUserChip } from '@/components/auth-user-chip';
 import { useAuth } from '@/lib/auth/use-auth';
+import { Footerdemo } from '@/components/ui/footer-section';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -385,11 +386,7 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      <footer className="relative z-10 w-full border-t border-white/10 bg-white/5 py-6 text-center backdrop-blur-xl">
-        <p className="text-sm tracking-wide text-zinc-500">
-          Repliq Engine v1.0 · Workspace history
-        </p>
-      </footer>
+      <Footerdemo />
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from '@studio-freight/lenis';
 
 export function ParallaxComponent() {
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -13,48 +12,39 @@ export function ParallaxComponent() {
 
     const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]');
 
-    if (triggerElement) {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: triggerElement,
-          start: "0% 0%",
-          end: "100% 0%",
-          scrub: 0
-        }
-      });
+    const ctx = gsap.context(() => {
+      if (triggerElement) {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: triggerElement,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.5,
+          }
+        });
 
-      const layers = [
-        { layer: "1", yPercent: 70 },
-        { layer: "2", yPercent: 55 },
-        { layer: "3", yPercent: 40 },
-        { layer: "4", yPercent: 10 }
-      ];
+        const layers = [
+          { layer: "1", yPercent: 70 },
+          { layer: "2", yPercent: 55 },
+          { layer: "3", yPercent: 40 },
+          { layer: "4", yPercent: 10 }
+        ];
 
-      layers.forEach((layerObj, idx) => {
-        tl.to(
-          triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
-          {
-            yPercent: layerObj.yPercent,
-            ease: "none"
-          },
-          idx === 0 ? undefined : "<"
-        );
-      });
-    }
-
-    const lenis = new Lenis();
-    // @ts-ignore
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-    gsap.ticker.lagSmoothing(0);
+        layers.forEach((layerObj, idx) => {
+          tl.to(
+            triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
+            {
+              yPercent: layerObj.yPercent,
+              ease: "none"
+            },
+            idx === 0 ? undefined : "<"
+          );
+        });
+      }
+    }, parallaxRef);
 
     return () => {
-      // Clean up GSAP and ScrollTrigger instances
-      ScrollTrigger.getAll().forEach(st => st.kill());
-      if (triggerElement) {
-        gsap.killTweensOf(triggerElement);
-      }
-      lenis.destroy();
+      ctx.revert();
     };
   }, []);
 

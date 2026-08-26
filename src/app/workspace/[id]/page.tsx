@@ -33,6 +33,9 @@ export default function WorkspacePage() {
   const [isApplyingPrompt, setIsApplyingPrompt] = useState(false);
   const [promptMessage, setPromptMessage] = useState('');
 
+  // Refresh sandbox counter
+  const [refreshKey, setRefreshKey] = useState(0);
+
   // Local credits store
   const [credits, setCredits] = useState(100);
 
@@ -44,7 +47,14 @@ export default function WorkspacePage() {
       router.push('/dashboard');
       return;
     }
-    setProject(p);
+    // Self-heal any legacy projects with obsolete lucide imports
+    if (p.files && p.files['/App.tsx'] && p.files['/App.tsx'].includes('import { ArrowUpRight, Github')) {
+      p.files['/App.tsx'] = PRESETS.portfolio.files['/App.tsx'];
+      const updated = updateProject(p.id, { files: p.files });
+      setProject(updated);
+    } else {
+      setProject(p);
+    }
     setCredits(getCredits());
   }, [id, router]);
 
@@ -123,19 +133,88 @@ export default function WorkspacePage() {
 
   // Viewport sizes
   const getViewportWidthClass = () => {
-    if (viewport === 'tablet') return 'w-[768px]';
-    if (viewport === 'mobile') return 'w-[375px]';
-    return 'w-full';
+    if (viewport === 'tablet') return 'w-[768px] max-w-full';
+    if (viewport === 'mobile') return 'w-[375px] max-w-full';
+    return 'w-full max-w-full';
   };
 
   // Build the sandpack mount key to force compile refresh
-  const sandpackKey = `${project.id}-${Object.values(project.files).join('').length}-${comparisonMode}`;
+  const sandpackKey = `${project.id}-${Object.values(project.files).join('').length}-${comparisonMode}-${refreshKey}`;
+
+  // Embedded preview HTML with CDN Tailwind CSS & fonts
+  const previewHtml = `<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Repliq Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              obsidian: {
+                black: '#050505',
+                dark: '#0B0B0D',
+                panel: '#101012',
+                border: 'rgba(255, 255, 255, 0.08)',
+                accent: '#8B5CF6'
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; }
+      html, body, #root {
+        height: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #050505;
+        color: #F5F5F5;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+    </style>
+  </head>
+  <body style="background-color: #050505; color: #F5F5F5; margin: 0; padding: 0; height: 100%;">
+    <div id="root" style="height: 100%;"></div>
+  </body>
+</html>`;
+
+  const previewStyles = `* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #050505;
+  color: #F5F5F5;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}`;
+
+  const previewIndex = `import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+import './styles.css';
+
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(<App />);
+}`;
 
   return (
     <div className="h-screen bg-[#050505] text-[#F5F5F5] font-sans flex flex-col justify-between overflow-hidden">
       
       {/* Workspace Header */}
-      <header className="h-14 border-b border-white/8 bg-[#0B0B0D] px-6 flex items-center justify-between z-10">
+      <header className="h-14 border-b border-white/8 bg-[#0B0B0D] px-6 flex items-center justify-between z-10 shrink-0">
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="p-1 text-[#8A8A8F] hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -166,10 +245,10 @@ export default function WorkspacePage() {
       </header>
 
       {/* Main Split Panels Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         
         {/* Left Sidebar navigation and inspector */}
-        <aside className="w-80 border-r border-white/8 bg-[#0B0B0D] flex flex-col">
+        <aside className="w-80 border-r border-white/8 bg-[#0B0B0D] flex flex-col shrink-0 min-h-0">
           <div className="grid grid-cols-4 h-11 border-b border-white/8 text-[10px] font-sans font-medium uppercase tracking-tighter text-[#8A8A8F]">
             <button 
               onClick={() => setActiveTab('files')}
@@ -279,7 +358,7 @@ export default function WorkspacePage() {
         </aside>
 
         {/* Live Preview Pane & Suite */}
-        <main className="flex-1 bg-[#050505] flex flex-col overflow-hidden">
+        <main className="flex-1 bg-[#050505] flex flex-col overflow-hidden min-h-0">
           
           {/* Comparison Suite controls */}
           <div className="h-12 border-b border-white/8 bg-[#0B0B0D] px-6 flex items-center justify-between shrink-0">
@@ -349,7 +428,7 @@ export default function WorkspacePage() {
               <div className="h-4 w-px bg-white/10"></div>
 
               <button 
-                onClick={() => {}} 
+                onClick={() => setRefreshKey(prev => prev + 1)} 
                 className="p-1.5 text-[#8A8A8F] hover:text-white transition-colors hover:bg-white/4 rounded"
                 title="Refresh Frame"
               >
@@ -359,8 +438,8 @@ export default function WorkspacePage() {
           </div>
 
           {/* Browser frame wrapper */}
-          <div className="flex-1 p-6 flex justify-center items-start overflow-y-auto">
-            <div className={`${getViewportWidthClass()} bg-[#0B0B0D] border border-white/8 rounded-xl overflow-hidden flex flex-col h-[520px] transition-all duration-300 shadow-2xl`}>
+          <div className="flex-1 p-3 md:p-5 flex justify-center items-stretch overflow-hidden min-h-0">
+            <div className={`${getViewportWidthClass()} bg-[#0B0B0D] border border-white/8 rounded-xl overflow-hidden flex flex-col h-full transition-all duration-300 shadow-2xl min-h-0`}>
               
               {/* Browser chrome shell top */}
               <div className="h-9 px-4 bg-[#101012] border-b border-white/8 flex items-center justify-between shrink-0 select-none">
@@ -376,53 +455,22 @@ export default function WorkspacePage() {
               </div>
 
               {/* Viewport wrapper box for content modes */}
-              <div className="flex-1 relative overflow-hidden bg-[#050505]">
+              <div className="flex-1 relative overflow-hidden bg-[#050505] min-h-0 h-full w-full">
                 
                 {/* Sandpack Provider and sandboxed renderer */}
                 <SandpackProvider
                   key={sandpackKey}
-                  template="react-ts"
+                  template="react"
                   theme="dark"
+                  className="!h-full !w-full flex flex-col flex-1 min-h-0"
+                  style={{ height: '100%', width: '100%' }}
                   files={{
                     ...project.files,
-                    '/public/index.html': `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              obsidian: {
-                black: '#050505',
-                dark: '#0B0B0D',
-                panel: '#101012',
-                border: 'rgba(255, 255, 255, 0.08)',
-                accent: '#8B5CF6'
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #050505;
-        color: #F5F5F5;
-        margin: 0;
-        padding: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>`
+                    '/public/index.html': previewHtml,
+                    '/index.html': previewHtml,
+                    '/styles.css': previewStyles,
+                    '/index.tsx': previewIndex,
+                    '/index.js': previewIndex,
                   }}
                   customSetup={{
                     dependencies: {
@@ -430,48 +478,68 @@ export default function WorkspacePage() {
                     }
                   }}
                   options={{
-                    activeFile: project.activeFile,
-                    visibleFiles: Object.keys(project.files)
+                    activeFile: project.activeFile || '/App.tsx',
+                    visibleFiles: Object.keys(project.files),
+                    autorun: true,
+                    autoReload: true,
+                    recompileMode: 'delayed',
+                    recompileDelay: 150,
                   }}
                 >
                   {comparisonMode === 'preview' && (
                     <SandpackPreview 
                       showNavigator={false} 
-                      className="w-full h-full border-none!"
+                      showOpenInCodeSandbox={false}
+                      showRefreshButton={false}
+                      showRestartButton={false}
+                      className="!w-full !h-full !border-none flex-1 min-h-0"
+                      style={{ height: '100%', width: '100%' }}
                     />
                   )}
 
                   {comparisonMode === 'split' && (
-                    <div className="w-full h-full grid grid-cols-2">
+                    <div className="w-full h-full grid grid-cols-2 min-h-0 overflow-hidden">
                       {/* Left: Original reference */}
-                      <div className="border-r border-white/8 relative bg-[#0B0B0D] overflow-hidden select-none">
-                        <div className="absolute top-2 left-2 bg-[#050505]/80 px-2 py-0.5 border border-white/5 rounded text-[8px] font-mono text-[#8A8A8F]">
+                      <div className="border-r border-white/8 relative bg-[#0B0B0D] overflow-hidden select-none flex items-center justify-center min-h-0">
+                        <div className="absolute top-2 left-2 bg-[#050505]/80 px-2 py-0.5 border border-white/5 rounded text-[8px] font-mono text-[#8A8A8F] z-10">
                           ORIGINAL REFERENCE
                         </div>
-                        <img 
-                          src={project.screenshots[0]?.url} 
-                          alt="reference" 
-                          className="w-full h-full object-cover opacity-60" 
-                        />
+                        {project.screenshots[0]?.url ? (
+                          <img 
+                            src={project.screenshots[0].url} 
+                            alt="reference" 
+                            className="w-full h-full object-contain bg-[#050505]" 
+                          />
+                        ) : (
+                          <div className="text-xs text-[#8A8A8F] font-mono">No reference image</div>
+                        )}
                       </div>
                       
                       {/* Right: Compiled code output */}
-                      <div className="h-full">
+                      <div className="h-full w-full flex flex-col min-h-0 overflow-hidden">
                         <SandpackPreview 
                           showNavigator={false} 
-                          className="w-full h-full border-none!"
+                          showOpenInCodeSandbox={false}
+                          showRefreshButton={false}
+                          showRestartButton={false}
+                          className="!w-full !h-full !border-none flex-1 min-h-0"
+                          style={{ height: '100%', width: '100%' }}
                         />
                       </div>
                     </div>
                   )}
 
                   {comparisonMode === 'overlay' && (
-                    <div className="w-full h-full relative">
+                    <div className="w-full h-full relative min-h-0 overflow-hidden">
                       {/* Sandpack Live compiler underneath */}
-                      <div className="w-full h-full absolute inset-0 z-0">
+                      <div className="w-full h-full absolute inset-0 z-0 overflow-hidden">
                         <SandpackPreview 
                           showNavigator={false} 
-                          className="w-full h-full border-none!"
+                          showOpenInCodeSandbox={false}
+                          showRefreshButton={false}
+                          showRestartButton={false}
+                          className="!w-full !h-full !border-none flex-1 min-h-0"
+                          style={{ height: '100%', width: '100%' }}
                         />
                       </div>
 
@@ -480,11 +548,13 @@ export default function WorkspacePage() {
                         className="absolute inset-y-0 left-0 overflow-hidden bg-[#050505] z-10 pointer-events-none border-r border-[#E1E0CC]"
                         style={{ width: `${overlayOpacity}%` }}
                       >
-                        <img 
-                          src={project.screenshots[0]?.url} 
-                          alt="Overlay reference" 
-                          className="absolute inset-y-0 left-0 h-full w-[768px] max-w-none object-cover border-none"
-                        />
+                        {project.screenshots[0]?.url ? (
+                          <img 
+                            src={project.screenshots[0].url} 
+                            alt="Overlay reference" 
+                            className="absolute inset-y-0 left-0 h-full w-full max-w-none object-cover border-none"
+                          />
+                        ) : null}
                       </div>
 
                       {/* Minimalist slider divider handler */}
