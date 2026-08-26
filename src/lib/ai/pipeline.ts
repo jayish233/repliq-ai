@@ -347,7 +347,7 @@ export default function Dashboard() {
     },
     files: {
       "/App.tsx": `import React, { useState } from 'react';
-import { ArrowUpRight, Github, Twitter, Linkedin, Mail, ExternalLink, Code2, Cpu, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, Globe, Share2, Mail, ExternalLink, Code2, Cpu, ArrowRight } from 'lucide-react';
 
 export default function Portfolio() {
   const [copied, setCopied] = useState(false);
@@ -447,14 +447,14 @@ export default function Portfolio() {
               {copied ? 'COPIED_TO_CLIPBOARD!' : 'COPY_EMAIL_ADDRESS'}
             </button>
             <div className="flex gap-2 justify-center sm:justify-start">
-              <a href="#" className="p-2 border border-white/5 hover:bg-white/5 rounded text-[#8A8A8F] hover:text-white transition-colors">
-                <Github className="w-4.5 h-4.5" />
+              <a href="#" className="p-2 border border-white/5 hover:bg-white/5 rounded text-[#8A8A8F] hover:text-white transition-colors" title="Code">
+                <Code2 className="w-4.5 h-4.5" />
               </a>
-              <a href="#" className="p-2 border border-white/5 hover:bg-white/5 rounded text-[#8A8A8F] hover:text-white transition-colors">
-                <Twitter className="w-4.5 h-4.5" />
+              <a href="#" className="p-2 border border-white/5 hover:bg-white/5 rounded text-[#8A8A8F] hover:text-white transition-colors" title="Share">
+                <Share2 className="w-4.5 h-4.5" />
               </a>
-              <a href="#" className="p-2 border border-white/5 hover:bg-white/5 rounded text-[#8A8A8F] hover:text-white transition-colors">
-                <Linkedin className="w-4.5 h-4.5" />
+              <a href="#" className="p-2 border border-white/5 hover:bg-white/5 rounded text-[#8A8A8F] hover:text-white transition-colors" title="Web">
+                <Globe className="w-4.5 h-4.5" />
               </a>
             </div>
           </div>

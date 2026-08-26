@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { getProject, runPipeline, Project, ProjectStatus } from '@/lib/ai/pipeline';
 import { RepliqLogo } from '@/components/repliq-logo';
+import { Footerdemo } from '@/components/ui/footer-section';
 
 interface TimelineStep {
   statusKey: ProjectStatus;
@@ -212,10 +213,7 @@ export default function AnalyzingPipelinePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-white/8 bg-[#050505] text-center text-[10px] text-[#8A8A8F] font-mono">
-        <span>REPLIQ ENGINE PIPELINE PIPELINE PROCESSOR.</span>
-      </footer>
+      <Footerdemo />
     </div>
   );
 }

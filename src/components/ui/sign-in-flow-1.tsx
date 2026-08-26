@@ -156,16 +156,14 @@ const DotMatrix: React.FC<DotMatrixProps> = ({
 
         void main() {
             vec2 st = fragCoord.xy;
-            ${
-              center.includes("x")
-                ? "st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));"
-                : ""
-            }
-            ${
-              center.includes("y")
-                ? "st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));"
-                : ""
-            }
+            ${center.includes("x")
+          ? "st.x -= abs(floor((mod(u_resolution.x, u_total_size) - u_dot_size) * 0.5));"
+          : ""
+        }
+            ${center.includes("y")
+          ? "st.y -= abs(floor((mod(u_resolution.y, u_total_size) - u_dot_size) * 0.5));"
+          : ""
+        }
 
             float opacity = step(0.0, st.x);
             opacity *= step(0.0, st.y);
@@ -380,11 +378,10 @@ function MiniNavbar({
     <button
       type="button"
       onClick={() => onModeChange("signin")}
-      className={`w-full rounded-full border px-4 py-2 text-xs transition-colors sm:w-auto sm:text-sm ${
-        mode === "signin"
+      className={`w-full rounded-full border px-4 py-2 text-xs transition-colors sm:w-auto sm:text-sm ${mode === "signin"
           ? "border-white/40 bg-white/10 text-white"
           : "border-white/10 bg-white/5 text-zinc-300 hover:border-white/30 hover:text-white"
-      }`}
+        }`}
     >
       Log in
     </button>
@@ -396,11 +393,10 @@ function MiniNavbar({
       <button
         type="button"
         onClick={() => onModeChange("signup")}
-        className={`relative z-10 w-full rounded-full px-4 py-2 text-xs font-semibold transition-colors sm:w-auto sm:text-sm ${
-          mode === "signup"
+        className={`relative z-10 w-full rounded-full px-4 py-2 text-xs font-semibold transition-colors sm:w-auto sm:text-sm ${mode === "signup"
             ? "bg-white text-zinc-950"
             : "bg-linear-to-br from-[#E1E0CC] to-zinc-300 text-zinc-950 hover:from-white hover:to-[#E1E0CC]"
-        }`}
+          }`}
       >
         Sign up
       </button>
@@ -454,9 +450,8 @@ function MiniNavbar({
       </div>
 
       <div
-        className={`flex w-full flex-col items-center overflow-hidden transition-all duration-300 sm:hidden ${
-          isOpen ? "max-h-80 pt-4 opacity-100" : "pointer-events-none max-h-0 pt-0 opacity-0"
-        }`}
+        className={`flex w-full flex-col items-center overflow-hidden transition-all duration-300 sm:hidden ${isOpen ? "max-h-80 pt-4 opacity-100" : "pointer-events-none max-h-0 pt-0 opacity-0"
+          }`}
       >
         <nav className="flex w-full flex-col items-center space-y-3 text-sm">
           {navLinksData.map((link) => (
