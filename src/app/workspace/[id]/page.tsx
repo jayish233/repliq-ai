@@ -11,7 +11,9 @@ import {
   ExternalLink, Layers, FileCode, CheckCircle2, ChevronRight, Send, 
   Loader2, Info, Eye, Image as ImageIcon, Terminal, Sliders 
 } from 'lucide-react';
-import { getProject, updateProject, getCredits, Project, PRESETS } from '@/lib/ai/pipeline';
+import { getProject, updateProject, getCredits, deductCredits, Project, PRESETS } from '@/lib/ai/pipeline';
+import { sandboxDocument, sandboxExternalResources } from '@/lib/ai/sandbox-html';
+import { sanitizeGeneratedTsx } from '@/lib/ai/sanitize-tsx';
 import { RepliqLogo } from '@/components/repliq-logo';
 
 export default function WorkspacePage() {
@@ -76,11 +78,19 @@ export default function WorkspacePage() {
           activeFile: project.activeFile || '/App.tsx',
         }),
       });
-      const data = (await res.json()) as { files?: Record<string, string>; error?: string };
+      const data = (await res.json()) as {
+        files?: Record<string, string>;
+        error?: string;
+        credits?: number;
+        usage?: { total_tokens?: number };
+      };
 
       if (!res.ok || !data.files) {
         throw new Error(data.error || 'Edit failed');
       }
+
+      const charged = data.credits || 4;
+      const remaining = deductCredits(charged);
 
       const newLogs = [
         ...project.logs,
@@ -91,7 +101,7 @@ export default function WorkspacePage() {
         },
         {
           timestamp: new Date().toLocaleTimeString(),
-          message: 'Patched workspace files successfully. Compiling sandbox...',
+          message: `Patched workspace · ${data.usage?.total_tokens || 0} tokens · ${charged} credits.`,
           type: 'success' as const,
         },
       ];
@@ -99,12 +109,10 @@ export default function WorkspacePage() {
       const updated = updateProject(project.id, {
         files: data.files,
         logs: newLogs,
+        creditsUsed: (project.creditsUsed || 0) + charged,
       });
 
-      const currentCredits = getCredits();
-      const nextCredits = Math.max(0, currentCredits - 15);
-      localStorage.setItem('repliq_user_credits', nextCredits.toString());
-      setCredits(nextCredits);
+      setCredits(remaining);
 
       setProject(updated);
       setPromptInput('');
@@ -382,47 +390,12 @@ export default function WorkspacePage() {
                 <SandpackProvider
                   key={sandpackKey}
                   template="react-ts"
-                  theme="dark"
+                  theme={String(project.detectedTokens?.theme || "").toLowerCase().includes("light") ? "light" : "dark"}
                   files={{
                     ...project.files,
-                    '/public/index.html': `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              obsidian: {
-                black: '#050505',
-                dark: '#0B0B0D',
-                panel: '#101012',
-                border: 'rgba(255, 255, 255, 0.08)',
-                accent: '#8B5CF6'
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #050505;
-        color: #F5F5F5;
-        margin: 0;
-        padding: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>`
+                    "/App.tsx": sanitizeGeneratedTsx(project.files["/App.tsx"] || ""),
+                    "/index.html": sandboxDocument(project.detectedTokens),
+                    "/public/index.html": sandboxDocument(project.detectedTokens),
                   }}
                   customSetup={{
                     dependencies: {
@@ -431,7 +404,8 @@ export default function WorkspacePage() {
                   }}
                   options={{
                     activeFile: project.activeFile,
-                    visibleFiles: Object.keys(project.files)
+                    visibleFiles: Object.keys(project.files),
+                    externalResources: sandboxExternalResources(project.detectedTokens),
                   }}
                 >
                   {comparisonMode === 'preview' && (
